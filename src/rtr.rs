@@ -17,6 +17,7 @@ use crate::config::Config;
 use crate::metrics::ServerMetrics;
 use crate::operation::ExitError;
 use crate::origins::OriginsHistory;
+use std::time::Duration;
 
 
 pub fn rtr_listener(
@@ -94,6 +95,7 @@ impl Stream for RtrListener {
         let sock = &mut self.sock;
         pin_mut!(sock);
         sock.poll_next(cx).map(|sock| sock.map(|sock| sock.map(|sock| {
+            sock.set_keepalive(Some(Duration::new(60, 0))).expect("set_keepalive failed");
             self.metrics.inc_rtr_conn_open();
             RtrStream {
                 sock,
